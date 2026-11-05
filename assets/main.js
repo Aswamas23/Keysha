@@ -272,8 +272,9 @@ function goToPage(direction) {
 
   isFlipping = true;
 
-  // Prepare the incoming page
-  buildPage(nextIndex, pageNext);
+  // Use pre-built cached page — image is already loaded
+  pageNext.innerHTML = '';
+  pageNext.appendChild(prebuiltPages[nextIndex].cloneNode(true));
   pageNext.style.zIndex = '1';
   pageCurrent.style.zIndex = '2';
 
@@ -344,36 +345,18 @@ function openCurtain() {
     // Show music controls
     musicControls.style.display = 'flex';
 
-    // Pre-render first page (already built during init, but ensure it's correct)
-    buildPage(0, pageCurrent);
+    // Show first page using pre-built cache
+    showPage(0, pageCurrent);
   }, 2100);
 }
 
 curtainSection.addEventListener('click', openCurtain, { once: true });
 
 /* ─── CLICK ZONES (desktop navigation) ──────────────────────────────────────
-   Now handled by #btn-prev / #btn-next arrow buttons instead of
-   full-screen invisible zones, so scrolling is never blocked.
+   Navigation is via keyboard arrows and touch swipe.
+   Click zones kept for JS refs but hidden via CSS.
 ─────────────────────────────────────────────────────────────────────────── */
-const btnPrev = document.getElementById('btn-prev');
-const btnNext = document.getElementById('btn-next');
-
-function updateNavButtons() {
-  if (btnPrev) btnPrev.disabled = currentPhotoIndex === 0;
-  if (btnNext) btnNext.disabled = false; // always enabled (last page shows Continue hint)
-}
-
-if (btnPrev) {
-  btnPrev.addEventListener('click', () => {
-    if (appState === 'newspaper') goToPage(-1);
-  });
-}
-
-if (btnNext) {
-  btnNext.addEventListener('click', () => {
-    if (appState === 'newspaper') goToPage(1);
-  });
-}
+function updateNavButtons() { /* no-op — buttons removed */ }
 
 if (zoneLeft) {
   zoneLeft.addEventListener('click', () => {
@@ -587,21 +570,47 @@ bgMusic.addEventListener('volumechange', () => {
 });
 
 /* ─── INIT ───────────────────────────────────────────────────────────────────
-   Pre-render page 0 while the curtain is still showing, then eagerly
-   preload ALL photo and video assets in the background so there is no
-   blank-flash when the curtain opens or when pages are flipped.
+   Pre-render ALL pages into a hidden off-screen container so every image
+   is fully loaded by the browser before the curtain opens.
+   During flips we just swap pre-built nodes — no on-demand building.
 ─────────────────────────────────────────────────────────────────────────── */
-buildPage(0, pageCurrent);
 
-// Eagerly preload every photo
-CONFIG.photos.forEach((photo) => {
-  const img = new Image();
-  img.src = photo.src;
+// Cache: array of pre-built wrapper divs, one per photo
+const prebuiltPages = [];
+
+// Off-screen container that forces the browser to load all images immediately
+const preloadContainer = document.createElement('div');
+preloadContainer.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:900px;visibility:hidden;pointer-events:none;';
+document.body.appendChild(preloadContainer);
+
+CONFIG.photos.forEach((photo, i) => {
+  const wrapper = document.createElement('div');
+  const layoutClass = ['layout-hero','layout-split','layout-portrait','layout-editorial'][i % 4];
+  wrapper.className = layoutClass;
+
+  if (layoutClass === 'layout-hero')         buildHeroLayout(wrapper, photo, i);
+  else if (layoutClass === 'layout-split')   buildSplitLayout(wrapper, photo, i);
+  else if (layoutClass === 'layout-portrait') buildPortraitLayout(wrapper, photo, i);
+  else                                        buildEditorialLayout(wrapper, photo, i);
+
+  // Force all images to load by putting them in the real DOM
+  preloadContainer.appendChild(wrapper);
+  prebuiltPages.push(wrapper);
 });
 
-// Preload video poster frames by creating video elements briefly
+// Show first page immediately (clone so the original stays in preloadContainer)
+function showPage(index, containerEl) {
+  containerEl.innerHTML = '';
+  containerEl.appendChild(prebuiltPages[index].cloneNode(true));
+  pageNumber.textContent = 'Page ' + (index + 1) + ' of ' + CONFIG.photos.length;
+  continueHint.style.display = index === CONFIG.photos.length - 1 ? 'inline' : 'none';
+}
+
+showPage(0, pageCurrent);
+
+// Preload video metadata
 CONFIG.videos.forEach((vid) => {
   const v = document.createElement('video');
-  v.preload = 'metadata'; // just fetch enough for a poster frame
+  v.preload = 'metadata';
   v.src = vid.src;
 });

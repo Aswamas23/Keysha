@@ -504,43 +504,11 @@ body.state-newspaper {
   font-style: italic;
 }
 
-/* ─── NAVIGATION ARROWS ────────────────────────────────────────────────────── */
+/* ─── NAVIGATION ───────────────────────────────────────────────────────────── */
+/* Navigation via keyboard arrows and touch swipe — no visible buttons */
 .click-zone-left,
 .click-zone-right {
-  display: none; /* Replaced by #nav-arrows buttons */
-}
-
-#nav-arrows {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  max-width: 900px;
-  width: 100%;
-  padding: 1rem 1.5rem 2rem;
-  margin: 0 auto;
-}
-
-.nav-arrow {
-  background: none;
-  border: 1px solid var(--ink);
-  color: var(--ink);
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 1rem;
-  letter-spacing: 0.15em;
-  padding: 0.5rem 1.4rem;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-  text-transform: uppercase;
-}
-
-.nav-arrow:hover {
-  background: var(--ink);
-  color: var(--paper);
-}
-
-.nav-arrow:disabled {
-  opacity: 0.25;
-  cursor: default;
+  display: none;
 }
 
 /* ─── VIDEO SECTION ────────────────────────────────────────────────────────── */
