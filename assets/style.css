@@ -27,8 +27,13 @@ html, body {
 
 body {
   background: #000;
-  overflow: hidden;
+  overflow: hidden; /* Managed per-section via JS */
   font-family: 'Cormorant Garamond', Georgia, serif;
+}
+
+/* When the newspaper is active, allow it to scroll on its own */
+body.state-newspaper {
+  overflow: hidden; /* Newspaper section scrolls internally */
 }
 
 /* ─── CURTAIN SECTION ──────────────────────────────────────────────────────── */
@@ -505,7 +510,8 @@ body {
 .click-zone-right {
   position: fixed;
   top: 0;
-  height: 100%;
+  /* Leave 60px at the bottom so the music controls remain clickable */
+  height: calc(100% - 70px);
   width: 50%;
   z-index: 510;
   cursor: pointer;
