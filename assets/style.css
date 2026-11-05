@@ -166,7 +166,6 @@ html, body {
   overflow: hidden;
   border: 2px solid var(--ink);
   box-shadow: 4px 4px 12px rgba(0,0,0,.25);
-  flex-shrink: 0;
 }
 .pg-photo {
   display: block; width: 100%; height: auto;
@@ -209,29 +208,47 @@ html, body {
   text-align: center; letter-spacing: .3em;
 }
 
-/* Layout variants */
-/* HERO: photo full-width top */
-.layout-hero .pg-photo-wrap { width: 100%; }
-.layout-hero .pg-body       { column-count: 2; column-gap: 1.2rem; }
-.layout-hero                { flex-direction: column; }
+.pg-photo {
+  display: block; width: 100%; height: auto;
+  /* Never crop — show the whole person */
+  object-fit: contain;
+  object-position: top center;
+  background: var(--paper);
+  filter: sepia(12%) contrast(1.06);
+}
 
-/* SPLIT: photo left 55%, text right */
-.layout-split .pg-photo-wrap { width: 54%; }
+/* ── PAGE CONTENT LAYOUTS ────────────────────────────────────────────────── */
+/* All layouts stack photo on top, text below — ensures full portrait is shown */
+.pg-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
 
-/* PORTRAIT: photo centred */
-.layout-portrait             { flex-direction: column; align-items: center; }
-.layout-portrait .pg-photo-wrap { width: 65%; outline: 4px double var(--ink); outline-offset: 5px; }
-.layout-portrait .pg-text       { text-align: center; align-items: center; }
+/* Photo always full container width */
+.pg-photo-wrap {
+  width: 100%;
+}
 
-/* EDITORIAL: text left, photo right */
-.layout-editorial .pg-photo-wrap { width: 50%; }
+/* HERO: prominent full-width photo, text in two columns below */
+.layout-hero .pg-body { column-count: 2; column-gap: 1.4rem; }
+
+/* PORTRAIT: centred photo with double-rule border */
+.layout-portrait .pg-photo-wrap {
+  outline: 4px double var(--ink);
+  outline-offset: 6px;
+}
+.layout-portrait .pg-text { text-align: center; align-items: center; }
+
+/* SPLIT & EDITORIAL: still stacked but text gets a left-border accent */
+.layout-split .pg-text,
+.layout-editorial .pg-text {
+  border-left: 3px solid var(--ink);
+  padding-left: 1rem;
+}
 
 @media (max-width: 640px) {
-  .layout-split, .layout-editorial { flex-direction: column; }
-  .layout-split .pg-photo-wrap,
-  .layout-editorial .pg-photo-wrap { width: 100%; }
-  .layout-portrait .pg-photo-wrap  { width: 90%; }
-  .layout-hero .pg-body            { column-count: 1; }
+  .layout-hero .pg-body { column-count: 1; }
   .nph-meta { display: none; }
 }
 
