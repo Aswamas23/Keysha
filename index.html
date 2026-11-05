@@ -44,8 +44,13 @@
         <span id="page-number">Page 1</span>
         <span id="continue-hint" style="display:none">Continue &#8594;</span>
       </div>
+      <!-- Navigation arrows -->
+      <div id="nav-arrows">
+        <button class="nav-arrow" id="btn-prev" disabled>&#8592; Previous</button>
+        <button class="nav-arrow" id="btn-next">Next &#8594;</button>
+      </div>
     </div>
-    <!-- Click zones -->
+    <!-- Click zones (kept in DOM for JS refs but visually disabled) -->
     <div class="click-zone-left" id="zone-left" aria-label="Previous page"></div>
     <div class="click-zone-right" id="zone-right" aria-label="Next page"></div>
   </section>

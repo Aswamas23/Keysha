@@ -27,13 +27,13 @@ html, body {
 
 body {
   background: #000;
-  overflow: hidden; /* Managed per-section via JS */
+  overflow: hidden;
   font-family: 'Cormorant Garamond', Georgia, serif;
 }
 
-/* When the newspaper is active, allow it to scroll on its own */
+/* Allow scrolling when newspaper is active */
 body.state-newspaper {
-  overflow: hidden; /* Newspaper section scrolls internally */
+  overflow-y: auto;
 }
 
 /* ─── CURTAIN SECTION ──────────────────────────────────────────────────────── */
@@ -190,11 +190,10 @@ body.state-newspaper {
 
 /* ─── NEWSPAPER SECTION ────────────────────────────────────────────────────── */
 #newspaper-section {
-  position: fixed;
-  inset: 0;
+  position: relative;
+  width: 100%;
   background: var(--paper);
   z-index: 500;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -505,26 +504,43 @@ body.state-newspaper {
   font-style: italic;
 }
 
-/* ─── CLICK ZONES ──────────────────────────────────────────────────────────── */
+/* ─── NAVIGATION ARROWS ────────────────────────────────────────────────────── */
 .click-zone-left,
 .click-zone-right {
-  position: fixed;
-  top: 0;
-  /* Leave 60px at the bottom so the music controls remain clickable */
-  height: calc(100% - 70px);
-  width: 50%;
-  z-index: 510;
+  display: none; /* Replaced by #nav-arrows buttons */
+}
+
+#nav-arrows {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 900px;
+  width: 100%;
+  padding: 1rem 1.5rem 2rem;
+  margin: 0 auto;
+}
+
+.nav-arrow {
+  background: none;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1rem;
+  letter-spacing: 0.15em;
+  padding: 0.5rem 1.4rem;
   cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  text-transform: uppercase;
 }
 
-.click-zone-left {
-  left: 0;
-  cursor: w-resize;
+.nav-arrow:hover {
+  background: var(--ink);
+  color: var(--paper);
 }
 
-.click-zone-right {
-  right: 0;
-  cursor: e-resize;
+.nav-arrow:disabled {
+  opacity: 0.25;
+  cursor: default;
 }
 
 /* ─── VIDEO SECTION ────────────────────────────────────────────────────────── */
@@ -769,11 +785,6 @@ body.state-newspaper {
 
   .header-date,
   .header-issue {
-    display: none;
-  }
-
-  .click-zone-left,
-  .click-zone-right {
     display: none;
   }
 

@@ -139,7 +139,7 @@ function makePhoto(src, alt) {
   img.className = 'page-photo';
   img.src = src;
   img.alt = alt || '';
-  img.loading = 'lazy';
+  img.loading = 'eager';
   wrap.appendChild(img);
   return wrap;
 }
@@ -309,6 +309,9 @@ function goToPage(direction) {
     } else {
       continueHint.style.display = 'none';
     }
+    updateNavButtons();
+    // Scroll back to top of page so the new page is fully visible
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, 620); // Slightly over --flip-duration to let the animation complete cleanly
 }
 
@@ -328,6 +331,7 @@ function openCurtain() {
   setTimeout(() => {
     curtainSection.style.display = 'none';
     appState = 'newspaper';
+    document.body.classList.add('state-newspaper');
 
     // Reveal newspaper with a gentle fade
     newspaperSection.style.display = 'flex';
@@ -348,7 +352,29 @@ function openCurtain() {
 curtainSection.addEventListener('click', openCurtain, { once: true });
 
 /* ─── CLICK ZONES (desktop navigation) ──────────────────────────────────────
+   Now handled by #btn-prev / #btn-next arrow buttons instead of
+   full-screen invisible zones, so scrolling is never blocked.
 ─────────────────────────────────────────────────────────────────────────── */
+const btnPrev = document.getElementById('btn-prev');
+const btnNext = document.getElementById('btn-next');
+
+function updateNavButtons() {
+  if (btnPrev) btnPrev.disabled = currentPhotoIndex === 0;
+  if (btnNext) btnNext.disabled = false; // always enabled (last page shows Continue hint)
+}
+
+if (btnPrev) {
+  btnPrev.addEventListener('click', () => {
+    if (appState === 'newspaper') goToPage(-1);
+  });
+}
+
+if (btnNext) {
+  btnNext.addEventListener('click', () => {
+    if (appState === 'newspaper') goToPage(1);
+  });
+}
+
 if (zoneLeft) {
   zoneLeft.addEventListener('click', () => {
     if (appState === 'newspaper') goToPage(-1);
@@ -408,6 +434,7 @@ function triggerVideoTransition() {
   fadeOverlayIn(() => {
     // Hide newspaper
     newspaperSection.style.display = 'none';
+    document.body.classList.remove('state-newspaper');
 
     // Show video section (hidden behind overlay)
     videoSection.style.display = 'flex';
@@ -560,7 +587,21 @@ bgMusic.addEventListener('volumechange', () => {
 });
 
 /* ─── INIT ───────────────────────────────────────────────────────────────────
-   Pre-render page 0 while the curtain is still showing, so images start
-   loading in the background before the visitor clicks.
+   Pre-render page 0 while the curtain is still showing, then eagerly
+   preload ALL photo and video assets in the background so there is no
+   blank-flash when the curtain opens or when pages are flipped.
 ─────────────────────────────────────────────────────────────────────────── */
 buildPage(0, pageCurrent);
+
+// Eagerly preload every photo
+CONFIG.photos.forEach((photo) => {
+  const img = new Image();
+  img.src = photo.src;
+});
+
+// Preload video poster frames by creating video elements briefly
+CONFIG.videos.forEach((vid) => {
+  const v = document.createElement('video');
+  v.preload = 'metadata'; // just fetch enough for a poster frame
+  v.src = vid.src;
+});
