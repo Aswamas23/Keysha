@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A cinematic runway tribute.">
+  <title>For Keysha</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <!-- Background music -->
+  <audio id="bgMusic" preload="auto"></audio>
+
+  <!-- Section 1: Red Curtain -->
+  <section id="curtain-section">
+    <div id="curtain-left"></div>
+    <div id="curtain-right"></div>
+    <div id="curtain-text">
+      <p class="curtain-main">A little something for you...</p>
+      <p class="curtain-sub">Click anywhere to begin.</p>
+    </div>
+  </section>
+
+  <!-- Section 2: Newspaper Catalogue -->
+  <section id="newspaper-section" style="display:none">
+    <div id="newspaper-container">
+      <div id="newspaper-header">
+        <div class="header-rule"></div>
+        <div class="header-title-row">
+          <span class="header-date">Vol. I &mdash; 2026</span>
+          <h1 class="publication-name">THE RUNWAY GAZETTE</h1>
+          <span class="header-issue">Special Edition</span>
+        </div>
+        <div class="header-rule"></div>
+      </div>
+      <div id="flip-book">
+        <div id="page-current" class="page"></div>
+        <div id="page-next" class="page"></div>
+      </div>
+      <div id="newspaper-footer">
+        <span id="page-number">Page 1</span>
+        <span id="continue-hint" style="display:none">Continue &#8594;</span>
+      </div>
+    </div>
+    <!-- Click zones -->
+    <div class="click-zone-left" id="zone-left" aria-label="Previous page"></div>
+    <div class="click-zone-right" id="zone-right" aria-label="Next page"></div>
+  </section>
+
+  <!-- Section 3: Video Showcase -->
+  <section id="video-section" style="display:none">
+    <div id="video-container">
+      <p id="video-title" class="video-title"></p>
+      <video id="mainVideo" playsinline controls></video>
+    </div>
+  </section>
+
+  <!-- Section 4: Apology -->
+  <section id="apology-section" style="display:none">
+    <div id="apology-inner">
+      <h2 id="apology-recipient"></h2>
+      <div id="apology-paragraphs"></div>
+      <p id="apology-signature" class="apology-signature"></p>
+      <div id="apology-ornament">&#10022;</div>
+    </div>
+  </section>
+
+  <!-- Transition overlay -->
+  <div id="transition-overlay"></div>
+
+  <!-- Music controls -->
+  <div id="music-controls" style="display:none">
+    <button id="music-toggle" aria-label="Pause music">&#9646;&#9646;</button>
+    <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.75" aria-label="Volume">
+  </div>
+
+  <script src="assets/config.js"></script>
+  <script src="assets/main.js"></script>
+</body>
+</html>

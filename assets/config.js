@@ -1,0 +1,40 @@
+const CONFIG = {
+  music: {
+    src: 'SpotiDown.App - Gimme Dat _feat. Wizkid_ - Ayra Starr.mp3',
+    defaultVolume: 0.75,
+    videoPlayingVolume: 0.12,
+    videoMutedVolume: 0.65,
+    fadeInDuration: 1500,
+    fadeOutDuration: 1000,
+  },
+  photos: [
+    { src: 'photos/WhatsApp Image 2026-11-05 at 13.58.43.jpeg', headline: 'THE FACE OF THE RUNWAY', caption: 'Where it all began.', date: '2026' },
+    { src: 'photos/WhatsApp Image 2026-11-05 at 13.58.43 (1).jpeg', headline: 'A STAR IN THE MAKING', caption: 'Every step a statement.', date: '2026' },
+    { src: 'photos/WhatsApp Image 2026-11-05 at 13.58.44.jpeg', headline: 'THE ART OF HER PRESENCE', caption: 'Commanding every room.', date: '2026' },
+    { src: 'photos/WhatsApp Image 2026-11-05 at 13.58.44 (1).jpeg', headline: 'BEHIND EVERY WALK, A STORY', caption: 'Grace in motion.', date: '2026' },
+    { src: 'photos/WhatsApp Image 2026-11-05 at 13.58.44 (2).jpeg', headline: 'THE WORLD THROUGH HER LENS', caption: 'The camera never lies.', date: '2026' },
+    { src: 'photos/WhatsApp Image 2026-11-05 at 13.58.45.jpeg', headline: 'THE FACE OF THE RUNWAY', caption: 'Born for this moment.', date: '2026' },
+    { src: 'photos/WhatsApp Image 2026-11-05 at 13.58.45 (1).jpeg', headline: 'A STAR IN THE MAKING', caption: 'Effortless. Radiant. Hers.', date: '2026' },
+    { src: 'photos/WhatsApp Image 2026-11-05 at 13.58.46.jpeg', headline: 'THE ART OF HER PRESENCE', caption: 'The runway remembers her.', date: '2026' },
+    { src: 'photos/WhatsApp Image 2026-11-05 at 13.58.46 (1).jpeg', headline: 'BEHIND EVERY WALK, A STORY', caption: 'Unstoppable.', date: '2026' },
+    { src: 'photos/WhatsApp Image 2026-11-05 at 13.58.46 (2).jpeg', headline: 'THE WORLD THROUGH HER LENS', caption: 'Her world. Her rules.', date: '2026' },
+    { src: 'photos/WhatsApp Image 2026-11-05 at 13.58.46 (3).jpeg', headline: 'THE FACE OF THE RUNWAY', caption: 'The final frame. Not the last story.', date: '2026' },
+  ],
+  videos: [
+    { src: 'photos/WhatsApp Video 2026-11-05 at 13.58.45.mp4', title: 'Her Runway Debut', hasAudio: true },
+    { src: 'photos/WhatsApp Video 2026-11-05 at 13.58.45 (1).mp4', title: 'In Her Element', hasAudio: true },
+  ],
+  apologyMessage: {
+    recipient: 'To Keysha,',
+    paragraphs: [
+      'This is for you.',
+      'I\u2019ve watched you grow into something extraordinary \u2014 the runway was always yours, and these moments prove it.',
+      'I am so incredibly proud of you. You deserve every light, every camera, every standing ovation.',
+      'I know I hurt you. I won\u2019t pretend otherwise, and I won\u2019t make excuses.',
+      'I am truly, deeply sorry.',
+      'This gift isn\u2019t meant to fix what happened. It\u2019s just me wanting you to know \u2014 you are celebrated, you are admired, and you are so very loved.',
+      'Take all the time you need. I\u2019ll be here.',
+    ],
+    signature: '\u2014 Adrian',
+  },
+};
