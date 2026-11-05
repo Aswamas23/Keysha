@@ -2,13 +2,10 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --red-dark:   #1a0005;
-  --red-mid:    #8b0000;
-  --red-bright: #c0392b;
-  --gold:       #d4af37;
-  --paper:      #f4efe0;
-  --ink:        #1a1008;
-  --ink2:       #3d2b1f;
+  --gold:  #d4af37;
+  --paper: #f4efe0;
+  --ink:   #1a1008;
+  --ink2:  #3d2b1f;
 }
 
 html, body {
@@ -18,52 +15,43 @@ html, body {
   overflow-x: hidden;
 }
 
-/* ── CURTAIN ─────────────────────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════════════
+   CURTAIN
+═══════════════════════════════════════════════════════════════════════════ */
 #curtain-overlay {
   position: fixed; inset: 0; z-index: 900;
   cursor: pointer; overflow: hidden;
-  /* dark vignette */
   background: radial-gradient(ellipse at 50% 50%, transparent 25%, rgba(0,0,0,.7) 100%);
 }
 #curtain-overlay::before {
-  /* centre seam shadow */
   content: '';
   position: absolute; top: 0; left: 50%; transform: translateX(-50%);
   width: 12px; height: 100%; z-index: 2;
   background: linear-gradient(90deg, rgba(0,0,0,.6) 0%, transparent 50%, rgba(0,0,0,.6) 100%);
   pointer-events: none;
 }
-
 #curtain-left, #curtain-right {
   position: absolute; top: 0; height: 100%; width: 50%;
   transition: transform 2s cubic-bezier(.77,0,.18,1);
   will-change: transform;
-}
-#curtain-left  { left: 0; }
-#curtain-right { right: 0; }
-
-/* Velvet texture via layered gradients */
-#curtain-left, #curtain-right {
   background:
     repeating-linear-gradient(90deg,
       rgba(0,0,0,.45) 0%, rgba(255,255,255,.02) 2%, transparent 5%,
-      rgba(0,0,0,.3)  8%, transparent 12%,
+      rgba(0,0,0,.3) 8%, transparent 12%,
       rgba(0,0,0,.4) 18%, transparent 24%,
-      rgba(0,0,0,.35) 30%
-    ),
+      rgba(0,0,0,.35) 30%),
     radial-gradient(ellipse 80% 50% at 50% 15%, rgba(200,40,40,.45) 0%, transparent 70%),
     linear-gradient(175deg, #1a0005 0%, #6b0020 15%, #9b0000 35%, #c0392b 50%, #9b0000 65%, #6b0020 85%, #1a0005 100%);
 }
-/* Gold fringe */
+#curtain-left  { left: 0; }
+#curtain-right { right: 0; }
 #curtain-left::after, #curtain-right::after {
-  content: '';
-  position: absolute; bottom: 0; left: 0; width: 100%; height: 16px;
+  content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 16px;
   background: repeating-linear-gradient(90deg,
     var(--gold) 0, var(--gold) 3px, transparent 3px, transparent 8px,
     #b8960c 8px, #b8960c 10px, transparent 10px, transparent 14px);
   opacity: .7;
 }
-/* Open state */
 #curtain-left.open  { transform: translateX(-100%); }
 #curtain-right.open { transform: translateX(100%); }
 
@@ -75,8 +63,7 @@ html, body {
 }
 .curtain-main {
   font-family: 'Playfair Display', Georgia, serif;
-  font-size: clamp(1.8rem, 4vw, 3.4rem);
-  font-style: italic;
+  font-size: clamp(1.8rem, 4vw, 3.4rem); font-style: italic;
   text-shadow: 0 0 30px rgba(212,175,55,.6), 0 2px 8px rgba(0,0,0,.9);
   line-height: 1.3;
 }
@@ -87,19 +74,19 @@ html, body {
 }
 @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:1} }
 
-/* ── NEWSPAPER ───────────────────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════════════
+   NEWSPAPER WRAPPER & HEADER
+═══════════════════════════════════════════════════════════════════════════ */
 #newspaper-wrap {
   min-height: 100vh;
   background: var(--paper);
-  padding: 0 0 3rem;
+  padding: 0 0 4rem;
 }
 #newspaper-inner {
   max-width: 860px;
   margin: 0 auto;
   padding: 1.5rem 1.5rem 0;
 }
-
-/* Header */
 #newspaper-header { text-align: center; margin-bottom: 1.2rem; }
 .nph-rule  { height: 2px; background: var(--ink); margin: .2rem 0; }
 .nph-row   { display: flex; align-items: center; justify-content: space-between; padding: .4rem 0; }
@@ -108,15 +95,11 @@ html, body {
   font-weight: 900; font-size: clamp(1.4rem, 5vw, 3.2rem);
   letter-spacing: .14em; text-transform: uppercase; color: var(--ink);
 }
-.nph-meta  { font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); }
+.nph-meta { font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); }
 
-/* Stage */
-#page-stage {
-  position: relative;
-  perspective: 1400px;
-}
+/* ── Page stage ─────────────────────────────────────────────────────────── */
+#page-stage { position: relative; perspective: 1400px; }
 
-/* Pages */
 .np-page {
   width: 100%;
   background: var(--paper);
@@ -128,19 +111,17 @@ html, body {
 }
 .np-page--hidden { display: none; }
 
-/* Flip animations */
 .np-page.flip-out {
   animation: flipOut .6s cubic-bezier(.645,.045,.355,1) forwards;
 }
 .np-page.flip-in {
-  position: absolute; top: 0; left: 0; right: 0;
-  display: block;
+  position: absolute; top: 0; left: 0; right: 0; display: block;
   animation: flipIn .6s cubic-bezier(.645,.045,.355,1) forwards;
 }
-@keyframes flipOut { from{transform:rotateY(0)}   to{transform:rotateY(-180deg)} }
+@keyframes flipOut { from{transform:rotateY(0)} to{transform:rotateY(-180deg)} }
 @keyframes flipIn  { from{transform:rotateY(180deg)} to{transform:rotateY(0)} }
 
-/* Footer */
+/* ── Footer nav ─────────────────────────────────────────────────────────── */
 #newspaper-footer {
   display: flex; align-items: center; justify-content: space-between;
   padding: .8rem 0; margin-top: .8rem;
@@ -149,34 +130,45 @@ html, body {
 }
 .pg-arrow {
   font-family: 'Cormorant Garamond', Georgia, serif;
-  font-style: italic; font-size: .9rem;
-  cursor: pointer; padding: .3rem .6rem;
-  border: 1px solid var(--ink2); border-radius: 2px;
-  transition: background .2s, color .2s;
-  user-select: none;
+  font-style: italic; font-size: .9rem; cursor: pointer;
+  padding: .3rem .6rem; border: 1px solid var(--ink2); border-radius: 2px;
+  transition: background .2s, color .2s; user-select: none;
 }
-.pg-arrow:hover { background: var(--ink); color: var(--paper); }
+.pg-arrow:hover  { background: var(--ink); color: var(--paper); }
 .pg-arrow.disabled { opacity: .25; pointer-events: none; }
 
-/* ── PAGE CONTENT LAYOUTS ────────────────────────────────────────────────── */
-/* Every layout is a flex column on mobile, adjusts on desktop */
-.pg-layout { display: flex; gap: 1.2rem; flex-wrap: wrap; }
+/* ════════════════════════════════════════════════════════════════════════════
+   PAGE PHOTO — never crop, always show full person
+   Photos are portrait (720×1090 or 1200×1600). We show them full-width
+   with height:auto so the natural aspect ratio is preserved completely.
+═══════════════════════════════════════════════════════════════════════════ */
+.pg-layout {
+  display: flex;
+  flex-direction: column;   /* photo stacked above text — no side-by-side */
+  gap: 1.4rem;
+}
 
 .pg-photo-wrap {
-  overflow: hidden;
+  /* Full width of the page column — no width restriction */
+  width: 100%;
   border: 2px solid var(--ink);
-  box-shadow: 4px 4px 12px rgba(0,0,0,.25);
-}
-.pg-photo {
-  display: block; width: 100%; height: auto;
-  /* contain shows the full image — no cropping at all */
-  object-fit: contain;
-  object-position: top center;
-  /* paper background so "contain" letterbox matches the page */
+  box-shadow: 4px 4px 14px rgba(0,0,0,.22);
+  /* No overflow:hidden — that would clip the image */
   background: var(--paper);
-  filter: sepia(12%) contrast(1.06);
 }
-.pg-text { display: flex; flex-direction: column; gap: .6rem; flex: 1; min-width: 180px; }
+
+.pg-photo {
+  display: block;
+  width: 100%;
+  height: auto;             /* natural height — never constrained */
+  max-width: 100%;
+  /* No object-fit, no object-position, no fixed height —
+     just let the browser render the image at its natural proportions */
+  filter: sepia(10%) contrast(1.05);
+}
+
+/* ── Text block ─────────────────────────────────────────────────────────── */
+.pg-text { display: flex; flex-direction: column; gap: .6rem; }
 
 .pg-headline {
   font-family: 'Playfair Display', Georgia, serif;
@@ -208,54 +200,31 @@ html, body {
   text-align: center; letter-spacing: .3em;
 }
 
-.pg-photo {
-  display: block; width: 100%; height: auto;
-  /* Never crop — show the whole person */
-  object-fit: contain;
-  object-position: top center;
-  background: var(--paper);
-  filter: sepia(12%) contrast(1.06);
-}
-
-/* ── PAGE CONTENT LAYOUTS ────────────────────────────────────────────────── */
-/* All layouts stack photo on top, text below — ensures full portrait is shown */
-.pg-layout {
-  display: flex;
-  flex-direction: column;
-  gap: 1.2rem;
-}
-
-/* Photo always full container width */
-.pg-photo-wrap {
-  width: 100%;
-}
-
-/* HERO: prominent full-width photo, text in two columns below */
+/* ── Layout accent variants (all still stacked) ─────────────────────────── */
 .layout-hero .pg-body { column-count: 2; column-gap: 1.4rem; }
 
-/* PORTRAIT: centred photo with double-rule border */
 .layout-portrait .pg-photo-wrap {
-  outline: 4px double var(--ink);
-  outline-offset: 6px;
+  outline: 4px double var(--ink); outline-offset: 6px;
+  margin: 0 auto; max-width: 80%;
 }
 .layout-portrait .pg-text { text-align: center; align-items: center; }
 
-/* SPLIT & EDITORIAL: still stacked but text gets a left-border accent */
 .layout-split .pg-text,
 .layout-editorial .pg-text {
-  border-left: 3px solid var(--ink);
-  padding-left: 1rem;
+  border-left: 3px solid var(--ink); padding-left: 1rem;
 }
 
 @media (max-width: 640px) {
   .layout-hero .pg-body { column-count: 1; }
+  .layout-portrait .pg-photo-wrap { max-width: 95%; }
   .nph-meta { display: none; }
 }
 
-/* ── VIDEO ───────────────────────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════════════
+   VIDEO
+═══════════════════════════════════════════════════════════════════════════ */
 #video-wrap {
-  position: fixed; inset: 0; z-index: 500;
-  background: #000;
+  position: fixed; inset: 0; z-index: 500; background: #000;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   gap: 1rem; padding: 1rem;
@@ -267,19 +236,19 @@ html, body {
 }
 #main-video {
   max-width: min(860px, 100%); max-height: 78vh;
-  width: 100%; height: auto; background: #000;
-  cursor: pointer;
+  width: 100%; height: auto; background: #000; cursor: pointer;
 }
 .video-hint {
   font-size: .75rem; letter-spacing: .12em;
   color: rgba(255,255,255,.35); text-transform: uppercase;
 }
 
-/* ── APOLOGY ─────────────────────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════════════
+   APOLOGY
+═══════════════════════════════════════════════════════════════════════════ */
 #apology-wrap {
-  position: fixed; inset: 0; z-index: 600;
-  background: #000; overflow-y: auto;
-  display: flex; align-items: center; justify-content: center;
+  position: fixed; inset: 0; z-index: 600; background: #000;
+  overflow-y: auto; display: flex; align-items: center; justify-content: center;
 }
 #apology-inner {
   max-width: 660px; padding: 3rem 1.8rem; text-align: center; color: #f0ebe0;
@@ -287,8 +256,7 @@ html, body {
 #apo-recipient {
   font-family: 'Playfair Display', Georgia, serif;
   font-size: 1.8rem; font-style: italic; font-weight: 400;
-  margin-bottom: 2.2rem;
-  opacity: 0; transition: opacity 1.2s ease;
+  margin-bottom: 2.2rem; opacity: 0; transition: opacity 1.2s ease;
 }
 .apo-para {
   font-size: clamp(.95rem, 1.9vw, 1.25rem);
@@ -306,16 +274,18 @@ html, body {
 }
 .visible { opacity: 1 !important; }
 
-/* ── FADE OVERLAY ────────────────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════════════
+   FADE OVERLAY
+═══════════════════════════════════════════════════════════════════════════ */
 #fade-overlay {
-  position: fixed; inset: 0; z-index: 800;
-  background: #000; opacity: 0;
-  pointer-events: none;
-  transition: opacity .9s ease;
+  position: fixed; inset: 0; z-index: 800; background: #000;
+  opacity: 0; pointer-events: none; transition: opacity .9s ease;
 }
 #fade-overlay.black { opacity: 1; pointer-events: all; }
 
-/* ── MUSIC WIDGET ────────────────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════════════
+   MUSIC WIDGET
+═══════════════════════════════════════════════════════════════════════════ */
 #music-widget {
   position: fixed; bottom: 1.4rem; right: 1.4rem; z-index: 1000;
   display: flex; align-items: center; gap: .7rem;
