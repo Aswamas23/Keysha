@@ -3,9 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="A cinematic runway tribute.">
   <title>For Keysha</title>
-  <!-- Inline SVG favicon — no 404 -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌹</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,68 +12,69 @@
 </head>
 <body>
 
-  <!-- Background music -->
   <audio id="bgMusic" preload="auto"></audio>
 
-  <!-- ── SECTION 1: Red Curtain ──────────────────────────────────────────── -->
-  <section id="curtain-section">
+  <!-- ═══ CURTAIN ═══ -->
+  <div id="curtain-overlay">
     <div id="curtain-left"></div>
     <div id="curtain-right"></div>
     <div id="curtain-text">
-      <p class="curtain-main">A little something for you...</p>
+      <p class="curtain-main">A little something for you&hellip;</p>
       <p class="curtain-sub">Click anywhere to begin.</p>
     </div>
-  </section>
+  </div>
 
-  <!-- ── SECTION 2: Newspaper Catalogue ────────────────────────────────── -->
-  <!-- Uses class "hidden" instead of style="display:none" so JS can show it -->
-  <section id="newspaper-section" class="hidden">
-    <div id="newspaper-container">
-      <div id="newspaper-header">
-        <div class="header-rule"></div>
-        <div class="header-title-row">
-          <span class="header-date">Vol. I &mdash; 2026</span>
-          <h1 class="publication-name">THE RUNWAY GAZETTE</h1>
-          <span class="header-issue">Special Edition</span>
+  <!-- ═══ NEWSPAPER ═══ (hidden until curtain opens) -->
+  <div id="newspaper-wrap" style="display:none">
+    <div id="newspaper-inner">
+      <header id="newspaper-header">
+        <div class="nph-rule"></div>
+        <div class="nph-row">
+          <span class="nph-meta">Vol. I &mdash; 2026</span>
+          <h1 class="nph-title">THE RUNWAY GAZETTE</h1>
+          <span class="nph-meta">Special Edition</span>
         </div>
-        <div class="header-rule"></div>
-      </div>
-      <div id="flip-book">
-        <div id="page-current"></div>
-        <div id="page-next"></div>
-      </div>
-      <div id="newspaper-footer">
-        <span id="page-number">Page 1</span>
-        <span id="continue-hint" class="hidden">Continue &#8594;</span>
-      </div>
-    </div>
-  </section>
+        <div class="nph-rule"></div>
+      </header>
 
-  <!-- ── SECTION 3: Video Showcase ─────────────────────────────────────── -->
-  <section id="video-section" class="hidden">
-    <div id="video-container">
-      <p id="video-title" class="video-title"></p>
-      <video id="mainVideo" playsinline controls></video>
-    </div>
-  </section>
+      <!-- The single page always visible -->
+      <div id="page-stage">
+        <div id="page-a" class="np-page"></div>
+        <div id="page-b" class="np-page np-page--hidden"></div>
+      </div>
 
-  <!-- ── SECTION 4: Apology ─────────────────────────────────────────────── -->
-  <section id="apology-section" class="hidden">
+      <footer id="newspaper-footer">
+        <span id="pg-prev" class="pg-arrow" role="button" tabindex="0" aria-label="Previous page">&#8592; Prev</span>
+        <span id="pg-num">1 / 11</span>
+        <span id="pg-next" class="pg-arrow" role="button" tabindex="0" aria-label="Next page">Next &#8594;</span>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ═══ VIDEO SECTION ═══ -->
+  <div id="video-wrap" style="display:none">
+    <p id="video-label" class="video-label"></p>
+    <video id="main-video" playsinline controls></video>
+    <p class="video-hint">tap video to skip &rarr;</p>
+  </div>
+
+  <!-- ═══ APOLOGY ═══ -->
+  <div id="apology-wrap" style="display:none">
     <div id="apology-inner">
-      <h2 id="apology-recipient"></h2>
-      <div id="apology-paragraphs"></div>
-      <p id="apology-signature" class="apology-signature"></p>
-      <div id="apology-ornament">&#10022;</div>
+      <h2 id="apo-recipient"></h2>
+      <div id="apo-body"></div>
+      <p  id="apo-sig" class="apo-sig"></p>
+      <div id="apo-orn">&#10022;</div>
     </div>
-  </section>
+  </div>
 
-  <!-- Transition overlay -->
-  <div id="transition-overlay"></div>
+  <!-- Black fade overlay -->
+  <div id="fade-overlay"></div>
 
-  <!-- Music controls -->
-  <div id="music-controls" class="hidden">
-    <button id="music-toggle" aria-label="Pause music">&#9646;&#9646;</button>
-    <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.75" aria-label="Volume">
+  <!-- Floating music widget -->
+  <div id="music-widget" style="display:none">
+    <button id="music-btn" aria-label="Pause">&#9646;&#9646;</button>
+    <input  id="vol-slider" type="range" min="0" max="1" step="0.01" value="0.75" aria-label="Volume">
   </div>
 
   <script src="assets/config.js"></script>

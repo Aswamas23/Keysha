@@ -1,427 +1,395 @@
-/* ═══════════════════════════════════════════════════════════════════════════
-   CINEMATIC RUNWAY TRIBUTE — main.js
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════════
+   CINEMATIC RUNWAY TRIBUTE  —  main.js
+   ═══════════════════════════════════════════════════════════════════════ */
 
-/* ─── STATE ─────────────────────────────────────────────────────────────── */
-let currentPhotoIndex = 0;
-let isFlipping        = false;
-let currentVideoIndex = 0;
-let appState          = 'curtain'; // curtain | newspaper | videos | apology
-let volumeFadeTimer   = null;
-let touchStartX       = 0;
+/* ── DOM ──────────────────────────────────────────────────────────────── */
+const bgMusic        = document.getElementById('bgMusic');
+const curtainOverlay = document.getElementById('curtain-overlay');
+const curtainLeft    = document.getElementById('curtain-left');
+const curtainRight   = document.getElementById('curtain-right');
+const newspaperWrap  = document.getElementById('newspaper-wrap');
+const pageStage      = document.getElementById('page-stage');
+const pageA          = document.getElementById('page-a');
+const pageB          = document.getElementById('page-b');
+const pgNum          = document.getElementById('pg-num');
+const pgPrev         = document.getElementById('pg-prev');
+const pgNext         = document.getElementById('pg-next');
+const videoWrap      = document.getElementById('video-wrap');
+const mainVideo      = document.getElementById('main-video');
+const videoLabel     = document.getElementById('video-label');
+const apologyWrap    = document.getElementById('apology-wrap');
+const apoRecipient   = document.getElementById('apo-recipient');
+const apoBody        = document.getElementById('apo-body');
+const apoSig         = document.getElementById('apo-sig');
+const apoOrn         = document.getElementById('apo-orn');
+const fadeOverlay    = document.getElementById('fade-overlay');
+const musicWidget    = document.getElementById('music-widget');
+const musicBtn       = document.getElementById('music-btn');
+const volSlider      = document.getElementById('vol-slider');
 
-/* ─── DOM REFS ──────────────────────────────────────────────────────────── */
-const bgMusic           = document.getElementById('bgMusic');
-const curtainSection    = document.getElementById('curtain-section');
-const curtainLeft       = document.getElementById('curtain-left');
-const curtainRight      = document.getElementById('curtain-right');
-const newspaperSection  = document.getElementById('newspaper-section');
-const flipBook          = document.getElementById('flip-book');
-const pageCurrent       = document.getElementById('page-current');
-const pageNext          = document.getElementById('page-next');
-const pageNumberEl      = document.getElementById('page-number');
-const continueHint      = document.getElementById('continue-hint');
-const videoSection      = document.getElementById('video-section');
-const mainVideo         = document.getElementById('mainVideo');
-const videoTitleEl      = document.getElementById('video-title');
-const apologySection    = document.getElementById('apology-section');
-const apologyRecipient  = document.getElementById('apology-recipient');
-const apologyParagraphs = document.getElementById('apology-paragraphs');
-const apologySignature  = document.getElementById('apology-signature');
-const apologyOrnament   = document.getElementById('apology-ornament');
-const overlay           = document.getElementById('transition-overlay');
-const musicControls     = document.getElementById('music-controls');
-const musicToggle       = document.getElementById('music-toggle');
-const volumeSlider      = document.getElementById('volume-slider');
+/* ── STATE ────────────────────────────────────────────────────────────── */
+let photoIdx    = 0;
+let videoIdx    = 0;
+let flipping    = false;
+let appState    = 'curtain';   // curtain | newspaper | video | apology
+let volTimer    = null;
+let activePage  = pageA;       // which div is currently "front"
+let standbyPage = pageB;       // which div sits behind
 
-/* ─── AUDIO ─────────────────────────────────────────────────────────────── */
+/* ── AUDIO ────────────────────────────────────────────────────────────── */
 bgMusic.src    = CONFIG.music.src;
 bgMusic.volume = CONFIG.music.defaultVolume;
-bgMusic.loop   = false;
 
-function smoothVolume(target, durationMs) {
-  if (volumeFadeTimer) { clearInterval(volumeFadeTimer); volumeFadeTimer = null; }
-  const to    = Math.min(1, Math.max(0, target));
-  const steps = Math.max(1, Math.round(durationMs / 50));
+function fadeVol(to, ms) {
+  if (volTimer) { clearInterval(volTimer); volTimer = null; }
+  to = Math.min(1, Math.max(0, to));
+  const steps = Math.max(1, Math.round(ms / 50));
   const delta = (to - bgMusic.volume) / steps;
-  volumeFadeTimer = setInterval(() => {
-    const next = bgMusic.volume + delta;
-    if ((delta > 0 && next >= to) || (delta < 0 && next <= to) || delta === 0) {
-      bgMusic.volume = to;
-      volumeSlider.value = to;
-      clearInterval(volumeFadeTimer); volumeFadeTimer = null;
+  volTimer = setInterval(() => {
+    const v = bgMusic.volume + delta;
+    if ((delta >= 0 && v >= to) || (delta < 0 && v <= to)) {
+      bgMusic.volume = to; volSlider.value = to;
+      clearInterval(volTimer); volTimer = null;
     } else {
-      bgMusic.volume = Math.min(1, Math.max(0, next));
-      volumeSlider.value = bgMusic.volume;
+      bgMusic.volume = Math.min(1, Math.max(0, v));
+      volSlider.value = bgMusic.volume;
     }
   }, 50);
 }
 
-/* ─── SHOW / HIDE HELPERS ───────────────────────────────────────────────── */
-function hide(el) { el.classList.add('hidden'); }
-function show(el, displayValue) {
-  el.classList.remove('hidden');
-  if (displayValue) el.style.display = displayValue;
+/* ── FADE OVERLAY ─────────────────────────────────────────────────────── */
+function blackOut(cb, holdMs) {
+  fadeOverlay.classList.add('black');
+  setTimeout(cb, holdMs || 900);
+}
+function clearBlack(delayMs) {
+  setTimeout(() => fadeOverlay.classList.remove('black'), delayMs || 0);
 }
 
-
-const fillerTexts = [
+/* ── PAGE CONTENT BUILDERS ────────────────────────────────────────────── */
+const FILLERS = [
   'In a season defined by boldness and silhouette, she arrived as if the runway had been waiting for her all along. Every step deliberate. Every gaze, a story.',
-  'The lights found her first. The cameras followed. Fashion, they say, is a language — and she speaks it fluently, effortlessly, in every frame.',
+  'The lights found her first. The cameras followed. Fashion is a language — and she speaks it fluently, effortlessly, in every frame.',
   'She does not walk runways. She commands them. Her presence rewrites the air in every room she enters, leaving an impression no photograph can fully capture.',
   'There is a particular kind of grace that cannot be taught. It is felt. It arrives quietly and announces itself loudly. She has always had it.',
   'Between the flash of cameras and the hush of an expectant crowd, she moves with the certainty of someone who has always known exactly where she belongs.',
-  'Fashion is memory — it is the story of who we are becoming. In these pages, we celebrate a woman becoming everything the world never quite prepared itself for.',
-  'The runway is unforgiving. It reveals everything. And she, with each measured step, chose to reveal strength, beauty, and an unapologetic self that stole every eye in the room.',
+  'Fashion is memory — the story of who we are becoming. In these pages, we celebrate a woman becoming everything the world never quite prepared itself for.',
+  'The runway is unforgiving. It reveals everything. And she chose to reveal strength, beauty, and an unapologetic self that stole every eye in the room.',
 ];
-const pullquotes = [
+const PULLQUOTES = [
   '"She does not merely wear fashion — she inhabits it."',
   '"Every walk a statement. Every frame, a legacy."',
   '"The camera found its muse and never looked away."',
   '"Grace is not learned. It is remembered."',
 ];
 
-/* ─── PAGE BUILDERS ─────────────────────────────────────────────────────── */
-function makeEl(tag, cls, text) {
-  const el = document.createElement(tag);
-  if (cls)  el.className = cls;
-  if (text) el.textContent = text;
-  return el;
-}
-function makePhoto(src, alt) {
-  const wrap = makeEl('div', 'page-photo-wrap');
-  const img  = makeEl('img', 'page-photo');
-  img.src = src; img.alt = alt || '';
-  // fetchpriority tells the browser this image matters
-  img.setAttribute('fetchpriority', 'high');
-  img.decoding = 'async';
-  wrap.appendChild(img);
-  return wrap;
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls)  e.className   = cls;
+  if (text) e.textContent = text;
+  return e;
 }
 
-function buildLayout(photo, index) {
-  const layout = ['layout-hero','layout-split','layout-portrait','layout-editorial'][index % 4];
-  const wrap   = makeEl('div', layout);
-  const filler = fillerTexts[index % fillerTexts.length];
-  const pq     = pullquotes[index % pullquotes.length];
+function buildPageContent(container, idx) {
+  const photo   = CONFIG.photos[idx];
+  const layout  = ['layout-hero','layout-split','layout-portrait','layout-editorial'][idx % 4];
+  const filler  = FILLERS[idx % FILLERS.length];
+  const pq      = PULLQUOTES[idx % PULLQUOTES.length];
 
-  const photo_el = makePhoto(photo.src, photo.headline);
-  const hl       = makeEl('h2',        'page-headline',  photo.headline);
-  const cap      = makeEl('p',         'page-caption',   photo.caption);
-  const dt       = makeEl('p',         'page-date',      photo.date);
-  const orn      = makeEl('p',         'page-ornament',  '— ✦ —');
-  const body     = makeEl('p',         'page-body',      filler);
-  const pqEl     = makeEl('blockquote','page-pullquote', pq);
+  container.innerHTML = '';
 
-  const txt = makeEl('div', 'page-text');
+  const wrap = el('div', 'pg-layout ' + layout);
+
+  /* Photo */
+  const photoWrap = el('div', 'pg-photo-wrap');
+  const img = el('img', 'pg-photo');
+  img.src  = photo.src;
+  img.alt  = photo.headline;
+  img.loading = 'eager';
+  photoWrap.appendChild(img);
+
+  /* Text block */
+  const txt  = el('div', 'pg-text');
+  const hl   = el('h2',        'pg-headline',  photo.headline);
+  const cap  = el('p',         'pg-caption',   photo.caption);
+  const dt   = el('p',         'pg-date',      photo.date);
+  const orn  = el('p',         'pg-ornament',  '— ✦ —');
+  const body = el('p',         'pg-body',      filler);
+  const pqEl = el('blockquote','pg-pullquote', pq);
 
   if (layout === 'layout-hero') {
     txt.append(hl, orn, cap, dt, body);
-    wrap.append(photo_el, txt);
+    wrap.append(photoWrap, txt);
   } else if (layout === 'layout-split') {
-    txt.append(hl, dt, orn, cap, pqEl, makeEl('p','page-body', fillerTexts[(index+1)%fillerTexts.length]));
-    wrap.append(photo_el, txt);
+    const body2 = el('p','pg-body', FILLERS[(idx+1) % FILLERS.length]);
+    txt.append(hl, dt, orn, cap, pqEl, body2);
+    wrap.append(photoWrap, txt);
   } else if (layout === 'layout-portrait') {
-    const hl2 = makeEl('h2','page-headline', photo.headline);
+    const hl2  = el('h2','pg-headline', photo.headline);
     hl2.style.textAlign = 'center';
-    const txt2 = makeEl('div','page-text');
-    txt2.append(cap, dt, makeEl('p','page-body', fillerTexts[(index+2)%fillerTexts.length]));
-    wrap.append(hl2, makeEl('p','page-ornament','— ✦ —'), photo_el, txt2);
-  } else { // editorial
-    txt.append(hl, dt, pqEl, cap, makeEl('p','page-body', fillerTexts[(index+3)%fillerTexts.length]));
-    wrap.append(txt, photo_el);
+    const orn2 = el('p','pg-ornament','— ✦ —');
+    const txt2 = el('div','pg-text');
+    txt2.append(cap, dt, el('p','pg-body', FILLERS[(idx+2)%FILLERS.length]));
+    wrap.append(hl2, orn2, photoWrap, txt2);
+  } else {
+    const body3 = el('p','pg-body', FILLERS[(idx+3)%FILLERS.length]);
+    txt.append(hl, dt, pqEl, cap, body3);
+    wrap.append(txt, photoWrap);
   }
-  return wrap;
+
+  container.appendChild(wrap);
 }
 
-/* ─── PRE-RENDER ALL PAGES ──────────────────────────────────────────────── */
-// Build every page layout now and store the DOM nodes.
-// The nodes live in a visible (but off-screen) container so the browser
-// actually loads and decodes every image before the curtain opens.
-const prebuiltPages = [];
-
-const preloadShelf = document.createElement('div');
-preloadShelf.id = 'preload-shelf';
-preloadShelf.setAttribute('aria-hidden', 'true');
-// Visible to the browser engine but off-screen for the user
-preloadShelf.style.cssText = [
-  'position:fixed',
-  'top:0',
-  'left:-9999px',
-  'width:900px',
-  'height:auto',
-  'overflow:hidden',
-  'visibility:hidden',
-  'pointer-events:none',
-  'z-index:-1',
-].join(';');
-document.body.appendChild(preloadShelf);
-
-CONFIG.photos.forEach((photo, i) => {
-  const node = buildLayout(photo, i);
-  preloadShelf.appendChild(node); // triggers network requests for each <img>
-  prebuiltPages.push(node);
-});
-
-/* ─── SHOW PAGE (no-clone, move the node) ──────────────────────────────── */
-// We MOVE the pre-built node into pageCurrent (and back when done).
-// Moving a DOM node that already has its image loaded means zero re-fetch.
-let currentPageNode = null; // the node currently living in pageCurrent
-let nextPageNode    = null; // the node currently living in pageNext
-
-function mountPage(index, container) {
-  // Return any existing node back to the shelf before replacing
-  if (container === pageCurrent && currentPageNode) {
-    preloadShelf.appendChild(currentPageNode);
+function updateFooter() {
+  pgNum.textContent = (photoIdx + 1) + ' / ' + CONFIG.photos.length;
+  pgPrev.classList.toggle('disabled', photoIdx === 0);
+  // On last page pgNext label becomes "Continue"
+  if (photoIdx === CONFIG.photos.length - 1) {
+    pgNext.textContent = 'Continue ✦';
+    pgNext.classList.remove('disabled');
+  } else {
+    pgNext.textContent = 'Next →';
+    pgNext.classList.remove('disabled');
   }
-  if (container === pageNext && nextPageNode) {
-    preloadShelf.appendChild(nextPageNode);
-  }
-
-  const node = prebuiltPages[index];
-  container.innerHTML = '';
-  container.appendChild(node);
-
-  if (container === pageCurrent) currentPageNode = node;
-  if (container === pageNext)    nextPageNode    = node;
-
-  pageNumberEl.textContent  = 'Page ' + (index + 1) + ' of ' + CONFIG.photos.length;
-  if (index === CONFIG.photos.length - 1) { show(continueHint); } else { hide(continueHint); }
 }
 
-/* ─── PAGE FLIP ─────────────────────────────────────────────────────────── */
-function goToPage(direction) {
-  if (isFlipping) return;
+/* ── PAGE FLIP ────────────────────────────────────────────────────────── */
+function flipTo(newIdx) {
+  if (flipping) return;
+  if (newIdx < 0) return;
 
-  const nextIndex = currentPhotoIndex + direction;
-  if (nextIndex < 0) return;
-  if (nextIndex >= CONFIG.photos.length) {
-    if (direction === 1) triggerVideoTransition();
+  if (newIdx >= CONFIG.photos.length) {
+    startVideoSection();
     return;
   }
 
-  isFlipping = true;
-  mountPage(nextIndex, pageNext);
+  flipping = true;
 
-  pageCurrent.style.zIndex = '2';
-  pageNext.style.zIndex    = '1';
+  // Build incoming content into standby page
+  buildPageContent(standbyPage, newIdx);
+  standbyPage.classList.remove('np-page--hidden');
 
-  pageCurrent.classList.add('flipping-out');
-  pageNext.classList.add('flipping-in');
+  // Position standby behind active
+  standbyPage.style.position = 'absolute';
+  standbyPage.style.top  = '0';
+  standbyPage.style.left = '0';
+  standbyPage.style.right = '0';
+  standbyPage.style.zIndex = '1';
+  activePage.style.zIndex  = '2';
 
-  setTimeout(() => {
-    // After animation: make nextIndex the current page
-    // Move the next node into current slot
-    const incomingNode = prebuiltPages[nextIndex];
+  // Kick off animations
+  activePage.classList.add('flip-out');
+  standbyPage.classList.add('flip-in');
 
-    // Return current node to shelf
-    if (currentPageNode) preloadShelf.appendChild(currentPageNode);
-    pageCurrent.innerHTML = '';
-    pageCurrent.appendChild(incomingNode);
-    currentPageNode = incomingNode;
+  activePage.addEventListener('animationend', () => {
+    // Swap roles
+    activePage.classList.remove('flip-out');
+    activePage.classList.add('np-page--hidden');
+    activePage.style.zIndex   = '';
+    activePage.style.position = '';
 
-    // Clear next slot
-    pageNext.innerHTML = '';
-    nextPageNode = null;
+    standbyPage.classList.remove('flip-in');
+    standbyPage.style.zIndex   = '';
+    standbyPage.style.position = '';
+    standbyPage.style.top  = '';
+    standbyPage.style.left = '';
+    standbyPage.style.right = '';
 
-    pageCurrent.className = 'page';
-    pageNext.className    = 'page';
-    pageCurrent.style.zIndex = '';
-    pageNext.style.zIndex    = '';
+    // Swap references
+    [activePage, standbyPage] = [standbyPage, activePage];
 
-    currentPhotoIndex = nextIndex;
-    isFlipping        = false;
-
-    pageNumberEl.textContent   = 'Page ' + (currentPhotoIndex + 1) + ' of ' + CONFIG.photos.length;
-    if (currentPhotoIndex === CONFIG.photos.length - 1) { show(continueHint); } else { hide(continueHint); }
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, 650);
+    photoIdx = newIdx;
+    flipping = false;
+    updateFooter();
+  }, { once: true });
 }
 
-/* ─── CURTAIN ───────────────────────────────────────────────────────────── */
-function openCurtain() {
+/* ── CURTAIN OPEN ─────────────────────────────────────────────────────── */
+curtainOverlay.addEventListener('click', function onCurtainClick() {
+  curtainOverlay.removeEventListener('click', onCurtainClick);
+
   curtainLeft.classList.add('open');
   curtainRight.classList.add('open');
 
-  bgMusic.play().catch(() => {/* autoplay blocked — user can hit play */});
+  // Start music on user gesture
+  bgMusic.play().catch(() => {});
 
+  // After curtain finishes sliding (2s) show newspaper
   setTimeout(() => {
-    curtainSection.style.display = 'none';
+    curtainOverlay.style.display = 'none';
     appState = 'newspaper';
-    document.body.classList.add('state-newspaper');
 
-    show(newspaperSection);
-    newspaperSection.style.opacity  = '0';
-    newspaperSection.style.transition = 'opacity 0.8s ease';
+    // Build first page
+    buildPageContent(activePage, 0);
+    updateFooter();
+
+    newspaperWrap.style.display = 'block';
+    newspaperWrap.style.opacity = '0';
+    newspaperWrap.style.transition = 'opacity .7s ease';
+    // Double rAF to ensure transition fires
     requestAnimationFrame(() => requestAnimationFrame(() => {
-      newspaperSection.style.opacity = '1';
+      newspaperWrap.style.opacity = '1';
     }));
 
-    show(musicControls, 'flex');
-
-    // Mount first page — images already loaded in preloadShelf
-    mountPage(0, pageCurrent);
+    musicWidget.style.display = 'flex';
   }, 2200);
-}
-
-curtainSection.addEventListener('click', openCurtain, { once: true });
-
-/* ─── KEYBOARD ──────────────────────────────────────────────────────────── */
-document.addEventListener('keydown', (e) => {
-  if (appState !== 'newspaper') return;
-  if (e.key === 'ArrowRight' || e.key === 'ArrowDown')  goToPage(1);
-  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')    goToPage(-1);
 });
 
-/* ─── TOUCH SWIPE ───────────────────────────────────────────────────────── */
-document.addEventListener('touchstart', (e) => {
-  touchStartX = e.changedTouches[0].clientX;
-}, { passive: true });
-
-document.addEventListener('touchend', (e) => {
+/* ── NEWSPAPER NAVIGATION ─────────────────────────────────────────────── */
+pgNext.addEventListener('click', () => {
   if (appState !== 'newspaper') return;
-  const dx = e.changedTouches[0].clientX - touchStartX;
-  if (dx < -50) goToPage(1);
-  if (dx >  50) goToPage(-1);
+  flipTo(photoIdx + 1);
+});
+pgPrev.addEventListener('click', () => {
+  if (appState !== 'newspaper') return;
+  flipTo(photoIdx - 1);
+});
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if (appState !== 'newspaper') return;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') flipTo(photoIdx + 1);
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   flipTo(photoIdx - 1);
+});
+
+// Touch swipe
+let swipeStartX = 0;
+document.addEventListener('touchstart', e => { swipeStartX = e.changedTouches[0].clientX; }, { passive: true });
+document.addEventListener('touchend', e => {
+  if (appState !== 'newspaper') return;
+  const dx = e.changedTouches[0].clientX - swipeStartX;
+  if (dx < -50) flipTo(photoIdx + 1);
+  if (dx >  50) flipTo(photoIdx - 1);
 }, { passive: true });
 
-/* ─── OVERLAY HELPERS ───────────────────────────────────────────────────── */
-function fadeOverlayIn(cb, holdMs) {
-  overlay.classList.remove('fade-out');
-  overlay.classList.add('fade-in');
-  setTimeout(cb || (() => {}), holdMs || 1000);
-}
-function fadeOverlayOut(delayMs) {
-  setTimeout(() => {
-    overlay.classList.remove('fade-in');
-    overlay.classList.add('fade-out');
-  }, delayMs || 0);
-}
-
-/* ─── PHOTO → VIDEO TRANSITION ─────────────────────────────────────────── */
-function triggerVideoTransition() {
+/* ── VIDEO SECTION ────────────────────────────────────────────────────── */
+function startVideoSection() {
   appState = 'transitioning';
-  fadeOverlayIn(() => {
-    hide(newspaperSection);
-    document.body.classList.remove('state-newspaper');
+  blackOut(() => {
+    newspaperWrap.style.display = 'none';
+    appState = 'video';
+    videoIdx = 0;
+    loadVideo(videoIdx);
 
-    show(videoSection, 'flex');
-    videoSection.style.opacity   = '0';
-    videoSection.style.transition = 'opacity 0.8s ease';
-
-    appState = 'videos';
-    currentVideoIndex = 0;
-    playNextVideo();
-
-    setTimeout(() => {
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        videoSection.style.opacity = '1';
-        fadeOverlayOut(0);
-      }));
-    }, 800);
-  }, 1000);
+    videoWrap.style.display   = 'flex';
+    videoWrap.style.opacity   = '0';
+    videoWrap.style.transition = 'opacity .7s ease';
+    clearBlack(200);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      videoWrap.style.opacity = '1';
+    }));
+  }, 900);
 }
 
-/* ─── VIDEO PLAYER ──────────────────────────────────────────────────────── */
-function loadVideo(index) {
-  const v = CONFIG.videos[index];
-  mainVideo.src = v.src;
-  videoTitleEl.textContent = v.title || '';
+function loadVideo(idx) {
+  const v = CONFIG.videos[idx];
+  mainVideo.src            = v.src;
+  videoLabel.textContent   = v.title || '';
   mainVideo.load();
-  mainVideo.play().catch(() => {/* blocked — controls visible */});
+  mainVideo.play().catch(() => {});
 }
 
-function playNextVideo() {
-  if (currentVideoIndex >= CONFIG.videos.length) {
-    triggerApologyTransition();
-    return;
-  }
-  loadVideo(currentVideoIndex);
-}
-
-mainVideo.addEventListener('play', () => {
-  if (currentVideoIndex >= CONFIG.videos.length) return;
-  const v = CONFIG.videos[currentVideoIndex];
-  const vol = (v.hasAudio && !mainVideo.muted)
-    ? CONFIG.music.videoPlayingVolume
-    : CONFIG.music.videoMutedVolume;
-  smoothVolume(vol, CONFIG.music.fadeOutDuration);
-});
-
-mainVideo.addEventListener('ended', () => {
-  smoothVolume(CONFIG.music.defaultVolume, CONFIG.music.fadeInDuration);
-  currentVideoIndex++;
-  if (currentVideoIndex < CONFIG.videos.length) {
-    fadeOverlayIn(() => {
-      loadVideo(currentVideoIndex);
-      setTimeout(() => fadeOverlayOut(0), 400);
+function advanceVideo() {
+  videoIdx++;
+  if (videoIdx < CONFIG.videos.length) {
+    blackOut(() => {
+      loadVideo(videoIdx);
+      clearBlack(300);
     }, 500);
   } else {
-    triggerApologyTransition();
+    startApology();
   }
-});
-
-/* ─── VIDEO → APOLOGY TRANSITION ───────────────────────────────────────── */
-function triggerApologyTransition() {
-  appState = 'transitioning';
-  smoothVolume(CONFIG.music.defaultVolume, CONFIG.music.fadeInDuration);
-  fadeOverlayIn(() => {
-    hide(videoSection);
-    show(apologySection, 'flex');
-    apologySection.style.opacity    = '0';
-    apologySection.style.transition = 'opacity 0.8s ease';
-    appState = 'apology';
-    setTimeout(() => {
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        apologySection.style.opacity = '1';
-        fadeOverlayOut(0);
-        setTimeout(revealApology, 600);
-      }));
-    }, 600);
-  }, 1200);
 }
 
-/* ─── APOLOGY REVEAL ────────────────────────────────────────────────────── */
+// Clicking the video element skips to next
+mainVideo.addEventListener('click', () => {
+  if (appState !== 'video') return;
+  mainVideo.pause();
+  advanceVideo();
+});
+
+// Natural end of video
+mainVideo.addEventListener('ended', () => {
+  if (appState !== 'video') return;
+  fadeVol(CONFIG.music.defaultVolume, CONFIG.music.fadeInDuration);
+  advanceVideo();
+});
+
+// Audio ducking when video plays
+mainVideo.addEventListener('play', () => {
+  if (appState !== 'video') return;
+  const v = CONFIG.videos[videoIdx] || {};
+  const target = (v.hasAudio && !mainVideo.muted)
+    ? CONFIG.music.videoPlayingVolume
+    : CONFIG.music.videoMutedVolume;
+  fadeVol(target, CONFIG.music.fadeOutDuration);
+});
+mainVideo.addEventListener('pause', () => {
+  if (appState !== 'video') return;
+  fadeVol(CONFIG.music.defaultVolume, CONFIG.music.fadeInDuration);
+});
+
+/* ── APOLOGY ──────────────────────────────────────────────────────────── */
+function startApology() {
+  appState = 'transitioning';
+  fadeVol(CONFIG.music.defaultVolume, CONFIG.music.fadeInDuration);
+  blackOut(() => {
+    videoWrap.style.display = 'none';
+    appState = 'apology';
+
+    apologyWrap.style.display   = 'flex';
+    apologyWrap.style.opacity   = '0';
+    apologyWrap.style.transition = 'opacity .8s ease';
+    clearBlack(400);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      apologyWrap.style.opacity = '1';
+      setTimeout(revealApology, 700);
+    }));
+  }, 1100);
+}
+
 function revealApology() {
   const msg = CONFIG.apologyMessage;
-  apologyRecipient.textContent = msg.recipient;
-  apologyParagraphs.innerHTML  = '';
-  apologySignature.textContent = msg.signature;
+  apoRecipient.textContent = msg.recipient;
+  apoBody.innerHTML = '';
+  apoSig.textContent = msg.signature;
 
-  setTimeout(() => apologyRecipient.classList.add('visible'), 200);
+  setTimeout(() => apoRecipient.classList.add('visible'), 200);
 
-  msg.paragraphs.forEach((text, i) => {
-    const p = makeEl('p', 'apology-paragraph', text);
-    apologyParagraphs.appendChild(p);
-    setTimeout(() => p.classList.add('visible'), 700 + i * 500);
+  msg.paragraphs.forEach((txt, i) => {
+    const p = el('p', 'apo-para', txt);
+    apoBody.appendChild(p);
+    setTimeout(() => p.classList.add('visible'), 700 + i * 520);
   });
 
-  const done = 700 + msg.paragraphs.length * 500;
-  setTimeout(() => apologySignature.classList.add('visible'), done + 400);
-  setTimeout(() => apologyOrnament.classList.add('visible'),  done + 1000);
+  const end = 700 + msg.paragraphs.length * 520;
+  setTimeout(() => apoSig.classList.add('visible'), end + 400);
+  setTimeout(() => apoOrn.classList.add('visible'),  end + 900);
 }
 
-/* ─── MUSIC CONTROLS ────────────────────────────────────────────────────── */
-musicToggle.addEventListener('click', () => {
+/* ── MUSIC CONTROLS ───────────────────────────────────────────────────── */
+musicBtn.addEventListener('click', () => {
   if (bgMusic.paused) {
     bgMusic.play().catch(() => {});
-    musicToggle.innerHTML = '&#9646;&#9646;';
-    musicToggle.setAttribute('aria-label', 'Pause music');
+    musicBtn.innerHTML = '&#9646;&#9646;';
+    musicBtn.setAttribute('aria-label', 'Pause');
   } else {
     bgMusic.pause();
-    musicToggle.innerHTML = '&#9654;';
-    musicToggle.setAttribute('aria-label', 'Play music');
+    musicBtn.innerHTML = '&#9654;';
+    musicBtn.setAttribute('aria-label', 'Play');
   }
 });
 
-volumeSlider.addEventListener('input', () => {
-  if (volumeFadeTimer) { clearInterval(volumeFadeTimer); volumeFadeTimer = null; }
-  bgMusic.volume = parseFloat(volumeSlider.value);
+volSlider.addEventListener('input', () => {
+  if (volTimer) { clearInterval(volTimer); volTimer = null; }
+  bgMusic.volume = parseFloat(volSlider.value);
 });
 
 bgMusic.addEventListener('volumechange', () => {
-  if (document.activeElement !== volumeSlider) {
-    volumeSlider.value = bgMusic.volume;
-  }
+  if (document.activeElement !== volSlider) volSlider.value = bgMusic.volume;
 });
+
+/* ── PRELOAD ALL IMAGES IN BACKGROUND ────────────────────────────────── */
+// Kick off image fetches immediately so they're cached by the time the
+// curtain opens. Use real Image objects — they fetch even off-screen.
+CONFIG.photos.forEach(p => { const i = new Image(); i.src = p.src; });
